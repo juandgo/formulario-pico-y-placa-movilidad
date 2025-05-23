@@ -1,0 +1,16 @@
+.custom-field {
+  width: 100%;
+}
+
+.required-label::after {
+  content: ' *';
+  color: red;
+}
+
+::ng-deep .mat-form-field-outline {
+  border-radius: 8px;
+}
+
+form {
+
+}
