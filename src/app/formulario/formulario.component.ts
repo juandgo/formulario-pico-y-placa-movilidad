@@ -48,6 +48,11 @@ export class FormularioComponent implements OnInit {
   // form = new FormGroup({});
   form!: FormGroup;
   plate: string = '';
+  onInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.plate = input.value.toUpperCase();
+    input.value = this.plate;  // actualiza el valor mostrado en el input
+  }
   months = [
     'ENE',
     'FEB',
@@ -137,7 +142,7 @@ export class FormularioComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       plate: [
         '',
-        [Validators.required, Validators.pattern(/^[A-Z]{3}-[0-9]{3}$/)],
+        [Validators.required, Validators.pattern("^[A-Z]{3}-?\\d{3}$")],
       ],
       brand: [''],
       model: [''],
@@ -170,13 +175,58 @@ export class FormularioComponent implements OnInit {
     return this.form?.get('email');
   }
 
+  get plateField() {
+    return this.form.get('plate');
+  }
+
+  get phoneField() {
+    return this.form.get('phone');
+  }
+
+  get addressField() {
+    return this.form.get('address');
+  }
+
+  get dvField() {
+    return this.form.get('dv');
+  }
+
+  get monthField() {
+    return this.form.get('month');
+  }
+
+  get yearField() {
+    return this.form.get('year');
+  }
+
+  get typeVehicleField() {
+    return this.form.get('type_vehicle');
+  }
+
+  get observationsField() {
+    return this.form.get('observations');
+  }
+
+  get totalToPayField() {
+    return this.form.get('total_to_pay');
+  }
+
+  get isFormValid() {
+    return this.form.valid;
+  }
+
+  get isFormInvalid() {
+    return this.form.invalid;
+  }
+
   private _task: Task = {
-    name: 'Tarea principal',
+    name: 'Enero 2025',
     completed: false,
     subtasks: [
-      { name: 'Subtarea 1', completed: false },
-      { name: 'Subtarea 2', completed: false },
-      { name: 'Subtarea 3', completed: false },
+      { name: '03/01/2025', completed: false },
+      { name: '10/01/2025', completed: false },
+      { name: '17/01/2025', completed: false },
+      { name: '20/01/2025', completed: false },
     ],
   };
 

@@ -65,7 +65,7 @@
 
       <div class="col-md-3">
         <label class="form-label">D.V.</label>
-        <input type="text" formControlName="phone" class="form-control" />
+        <input type="text" formControlName="dv" class="form-control" />
       </div>
       <div class="col-md-3">
         <label class="form-label">Teléfono</label>
@@ -138,20 +138,32 @@
         </select>
       </div>
 
-      <div class="col-md-4">
+      <div class="col-md-4" [formGroup]="form">
         <label class="form-label">
-          <span style="color: red; font-weight: bold">*</span> Número de placa
-          (ej: AAA-111)
+          <span style="color: red; font-weight: bold">*</span> Número de placa (ej: AAA-111)
         </label>
         <input
           type="text"
           class="form-control"
           required
-          [(ngModel)]="plate"
-          name="plate"
           formControlName="plate"
+          maxlength="7"
+          placeholder="AAA-111"
+          (input)="onInput($event)"
         />
+        <div
+          class="messages"
+          [class.active]="plateField?.touched && plateField?.invalid"
+        >
+          <strong *ngIf="plateField?.hasError('required')">
+            Este campo es requerido
+          </strong>
+          <strong *ngIf="plateField?.hasError('pattern')">
+            La placa debe tener el formato AAA-111 (3 letras mayúsculas, guion, 3 números)
+          </strong>
+        </div>
       </div>
+
     </div>
 
     <!-- Año y months -->
