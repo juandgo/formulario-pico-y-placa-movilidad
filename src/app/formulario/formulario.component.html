@@ -5,16 +5,44 @@
 
   <form [formGroup]="form">
     <!-- Datos del propietario -->
+
     <div class="row mb-3">
       <div class="col-md-12">
-        <label class="form-label"><span style="color: red; font-weight: bold">*</span>  Nombre o Razón Social</label>
-        <input type="text" formControlName="name" class="form-control" required />
+        <label class="form-label">
+          <span class="text-danger fw-bold">*</span> Nombre o Razón Social
+        </label>
+
+        <input
+          type="text"
+          formControlName="name"
+          class="form-control"
+          required
+          [class.is-invalid]="nameField?.touched && nameField?.invalid"
+        />
+
+        <div
+          class="messages"
+          [class.active]="nameField?.touched && nameField?.invalid"
+        >
+          <strong *ngIf="nameField?.hasError('required')"
+            >Este campo es requerido</strong
+          >
+          <strong *ngIf="nameField?.hasError('maxlength')"
+            >Debe tener máximo 10 caracteres</strong
+          >
+          <strong *ngIf="nameField?.hasError('pattern')"
+            >No debe tener caracteres inválidos</strong
+          >
+        </div>
       </div>
     </div>
 
     <div class="row mb-3">
       <div class="col-md-3">
-        <label class="form-label"><span style="color: red; font-weight: bold">*</span>  Tipo Documento</label>
+        <label class="form-label"
+          ><span style="color: red; font-weight: bold">*</span> Tipo
+          Documento</label
+        >
         <select class="form-select" formControlName="tipo_doc" required>
           <option value="">Seleccione</option>
           <option>C.C.</option>
@@ -23,8 +51,16 @@
       </div>
 
       <div class="col-md-3">
-        <label class="form-label"><span style="color: red; font-weight: bold">*</span>  Número de Documento</label>
-        <input type="text" formControlName="doc_number" class="form-control" required />
+        <label class="form-label"
+          ><span style="color: red; font-weight: bold">*</span> Número de
+          Documento</label
+        >
+        <input
+          type="text"
+          formControlName="doc_number"
+          class="form-control"
+          required
+        />
       </div>
 
       <div class="col-md-3">
@@ -40,12 +76,43 @@
     <!-- Notificación -->
     <div class="row mb-3">
       <div class="col-md-6">
-        <label class="form-label"><span style="color: red; font-weight: bold">*</span>  Dirección para notificación</label>
-        <input type="text" formControlName="address" class="form-control" required />
+        <label class="form-label"
+          ><span style="color: red; font-weight: bold">*</span> Dirección para
+          notificación</label
+        >
+        <input
+          type="text"
+          formControlName="address"
+          class="form-control"
+          required
+        />
       </div>
       <div class="col-md-6">
-        <label class="form-label">Correo electrónico</label>
-        <input type="email" formControlName="email" class="form-control" />
+        <label class="form-label">
+          <span class="text-danger fw-bold">*</span> Correo electrónico
+          <small class="text-muted">({{ emailField?.value }})</small>
+        </label>
+
+        <input
+          type="email"
+          formControlName="email"
+          class="form-control"
+          [class.is-invalid]="emailField?.touched && emailField?.invalid"
+        />
+
+        <div
+          class="messages"
+          [class.active]="
+            emailField?.invalid && (emailField?.touched || emailField?.dirty)
+          "
+        >
+          <strong *ngIf="emailField?.hasError('required')"
+            >El correo es obligatorio</strong
+          >
+          <strong *ngIf="emailField?.hasError('email')"
+            >Formato de correo inválido</strong
+          >
+        </div>
       </div>
     </div>
 
@@ -53,35 +120,41 @@
     <div class="row mb-3">
       <div class="col-md-4">
         <label class="form-label">Marca</label>
-        <select class="form-select">
+        <select class="form-select" formControlName="brand">
           <option value="">Seleccione</option>
           <option>Chevrolet</option>
           <option>Renault</option>
           <option>Toyota</option>
         </select>
       </div>
+
       <div class="col-md-4">
         <label class="form-label">Modelo</label>
-        <select class="form-select">
+        <select class="form-select" formControlName="model">
           <option value="">Seleccione</option>
           <option>2023</option>
           <option>2024</option>
           <option>2025</option>
         </select>
       </div>
+
       <div class="col-md-4">
-        <label class="form-label"><span style="color: red; font-weight: bold">*</span>  Número de placa (ej: AAA-111)</label>
+        <label class="form-label">
+          <span style="color: red; font-weight: bold">*</span> Número de placa
+          (ej: AAA-111)
+        </label>
         <input
           type="text"
           class="form-control"
           required
           [(ngModel)]="plate"
           name="plate"
+          formControlName="plate"
         />
       </div>
     </div>
 
-    <!-- Año y meses -->
+    <!-- Año y months -->
     <div class="mb-3">
       <label class="form-label fw-bold">Año</label>
       <div class="form-check form-check-inline ms-3">
@@ -90,36 +163,61 @@
           [disabled]="!habilitarCheckBoxes"
           type="checkbox"
           id="anio2025"
+          formControlName="year"
+          name="year"
         />
         <label class="form-check-label" for="anio2025">2025</label>
       </div>
 
-      <!-- meses -->
-      <div class="form-check form-check-inline" *ngFor="let mes of meses">
+      <!-- months -->
+      <div class="form-check form-check-inline" *ngFor="let month of months">
         <input
           class="form-check-input"
           type="checkbox"
-          [id]="mes"
+          [id]="month"
           [disabled]="!habilitarCheckBoxes"
-          [(ngModel)]="mesesSeleccionados[mes]"
-          [name]="mes"
+          [(ngModel)]="mesesSeleccionados[month]"
+          [name]="'checkbox_' + month"
+          formControlName="month"
+          name="month"
         />
-        <label class="form-check-label" [for]="mes">{{ mes }}</label>
+        <label class="form-check-label" [for]="month">{{ month }}</label>
       </div>
 
-      <!-- Select Picker por mes -->
-      <div class="mt-3" *ngFor="let mes of meses">
-        <div *ngIf="mesesSeleccionados[mes]" class="mb-2">
-          <label class="form-label">Seleccione fecha para {{ mes }}:</label>
-          <input type="date" class="form-control" [name]="'fecha_' + mes" />
-        </div>
-      </div>
+      <section class="example-section">
+        <span class="example-list-section">
+          <mat-checkbox
+            class="example-margin"
+            [checked]="task().completed"
+            [indeterminate]="partiallyComplete()"
+            (change)="update($event.checked)"
+          >
+            {{ task().name }}
+          </mat-checkbox>
+        </span>
+
+        <span class="example-list-section">
+          <ul>
+            <!-- @for (subtask of task().subtasks; track subtask; let i = $index) { -->
+            <li *ngFor="let subtask of task().subtasks; index as i">
+              <mat-checkbox
+                [checked]="subtask.completed"
+                [disabled]="true"
+                (change)="update($event.checked, i)"
+              >
+                {{ subtask.name }}
+              </mat-checkbox>
+            </li>
+            <!-- } -->
+          </ul>
+        </span>
+      </section>
     </div>
 
     <div class="row mb-3">
       <div class="col-md-4">
         <label class="form-label">Clase de Vehículo</label>
-        <select class="form-select">
+        <select class="form-select" formControlName="type_vehicle">
           <option value="">Seleccione</option>
           <option>Particular</option>
           <option>Público</option>
@@ -133,7 +231,10 @@
 
     <!-- Total a pagar -->
     <div class="mb-3">
-      <label class="form-label"><span style="color: red; font-weight: bold">*</span>  Total a Pagar</label>
+      <label class="form-label"
+        ><span style="color: red; font-weight: bold">*</span> Total a
+        Pagar</label
+      >
       <input type="number" class="form-control" required />
     </div>
 
@@ -150,7 +251,6 @@
       </mat-label>
       <input matInput required>
     </mat-form-field> -->
-
 
     <!-- Botones -->
     <div class="text-end">

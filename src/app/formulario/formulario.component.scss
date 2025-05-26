@@ -1,16 +1,58 @@
-.custom-field {
-  width: 100%;
+// .custom-field {
+//   width: 100%;
+// }
+
+// .required-label::after {
+//   content: ' *';
+//   color: red;
+// }
+
+// ::ng-deep .mat-form-field-outline {
+//   border-radius: 8px;
+// }
+
+// form {
+
+// }
+
+// input {
+//   &.is-valid {
+//     border: 2px solid #28a745;
+//   }
+//   &.is-invalid {
+//     border: 2px solid red;
+//   }
+// }
+// .messages {
+//   opacity: 0;
+//   transition: all 0.5s ease-in;
+//   &.active {
+//     opacity: 1;
+//   }
+
+//   & strong {
+//     color: darkred;
+//   }
+// }
+
+input.ng-invalid.ng-touched {
+  border: 1px solid darkred;
+  background-color: #fff5f5;
 }
 
-.required-label::after {
-  content: ' *';
-  color: red;
-}
+.messages {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: darkred;
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
 
-::ng-deep .mat-form-field-outline {
-  border-radius: 8px;
-}
+  &.active {
+    opacity: 1;
+  }
 
-form {
-
+  strong {
+    display: block;
+    margin-top: 2px;
+  }
 }
