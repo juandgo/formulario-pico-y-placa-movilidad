@@ -168,61 +168,51 @@
     </div>
 
     <div *ngIf="plateField?.valid">
-      <!-- Año y months -->
-      <div class="mb-3">
-        <label class="form-label fw-bold">Año</label>
-        <div class="form-check form-check-inline ms-3">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            id="anio2025"
-            formControlName="year"
-            name="year"
-          />
-          <label class="form-check-label" for="anio2025">2025</label>
-        </div>
-      </div>
-      <!-- months -->
-      <div class="form-check form-check-inline" *ngFor="let month of months">
-        <input
-          *ngIf="plateField?.valid"
-          class="form-check-input"
-          type="checkbox"
-          [id]="month"
-          [(ngModel)]="mesesSeleccionados[month]"
-          [name]="'checkbox_' + month"
-          formControlName="month"
-          name="month"
-        />
-        <label class="form-check-label" [for]="month">{{ month }}</label>
+      <!-- Select de año -->
+      <mat-form-field appearance="fill">
+        <mat-label>Año</mat-label>
+        <mat-select formControlName="year">
+          <mat-option *ngFor="let y of [2024, 2025, 2026]" [value]="y">{{
+            y
+          }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Checkboxes por mes -->
+      <div class="meses">
+        <mat-checkbox
+          *ngFor="let mes of months"
+          [checked]="mesesSeleccionados[mes]"
+          (change)="onMesSeleccionado(mes)"
+        >
+          {{ mes }}
+        </mat-checkbox>
       </div>
 
-      <!---date selector-->
-      <section class="example-section">
+      <!-- Subtareas del mes seleccionado -->
+      <section *ngFor="let task of tasks" class="example-section">
         <span class="example-list-section">
           <mat-checkbox
-            class="example-margin"
-            [checked]="task().completed"
-            [indeterminate]="partiallyComplete()"
-            (change)="update($event.checked)"
+          class="example-margin"
+          [checked]="task.completed"
+          [indeterminate]="isTaskIndeterminate(task)"
+          (change)="toggleTaskCompletion(task)">
+          {{ task.name }}
           >
-            {{ task().name }}
+            {{ task.name }}
           </mat-checkbox>
         </span>
 
         <span class="example-list-section">
           <ul>
-            <!-- @for (subtask of task().subtasks; track subtask; let i = $index) { -->
-            <li *ngFor="let subtask of task().subtasks; index as i">
+            <li *ngFor="let subtask of task.subtasks">
               <mat-checkbox
                 [checked]="subtask.completed"
-                [disabled]="true"
-                (change)="update($event.checked, i)"
+                (change)="toggleSubtaskCompletion(task, subtask)"
               >
                 {{ subtask.name }}
               </mat-checkbox>
             </li>
-            <!-- } -->
           </ul>
         </span>
       </section>

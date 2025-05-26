@@ -67,8 +67,11 @@ export class FormularioComponent implements OnInit {
     'NOV',
     'DIC',
   ];
-  yearSeleccionado = 2025;
+  // anioSeleccionado = 2025;
+  tasks: Task[] = [];
   mesesSeleccionados: { [key: string]: boolean } = {};
+  anioSeleccionado: boolean = false;
+
   // get habilitarCheckBoxes(): boolean {
   //   return this.plate.trim().length > 0;
   // }
@@ -86,18 +89,19 @@ export class FormularioComponent implements OnInit {
   // Fechas visibles actualmente (según el mes seleccionado)
   fechasVisibles: string[] = [];
 
-  onMesSeleccionado(month: string): void {
-    if (this.mesesSeleccionados[month]) {
-      this.fechasVisibles = this.fechasPorMes[month];
-    } else {
-      this.fechasVisibles = [];
-    }
-  }
+  // onMesSeleccionado(month: string): void {
+  //   if (this.mesesSeleccionados[month]) {
+  //     this.fechasVisibles = this.fechasPorMes[month];
+  //   } else {
+  //     this.fechasVisibles = [];
+  //   }
+  // }
 
   fechasSeleccionadas: { [key: string]: boolean } = {};
 
 
   constructor(private formBuilder: FormBuilder) {
+    this.months.forEach(month => this.mesesSeleccionados[month] = false);
     this.buildForm();
   }
 
@@ -250,4 +254,75 @@ export class FormularioComponent implements OnInit {
       this._task.completed = this._task.subtasks.every((t) => t.completed);
     }
   }
+
+  toggleSeleccionAnio(event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.anioSeleccionado = checked;
+
+    // Selecciona o deselecciona todos los meses
+    this.months.forEach(month => {
+      this.mesesSeleccionados[month] = checked;
+    });
+  }
+
+  private obtenerLunesDelMes(mes: string, anio: number): string[] {
+    const mesesIndice: { [key: string]: number } = {
+      ENE: 0, FEB: 1, MAR: 2, ABR: 3, MAY: 4, JUN: 5,
+      JUL: 6, AGO: 7, SEP: 8, OCT: 9, NOV: 10, DIC: 11
+    };
+
+    const indexMes = mesesIndice[mes];
+    const lunes: string[] = [];
+
+    const fecha = new Date(anio, indexMes, 1);
+    while (fecha.getMonth() === indexMes) {
+      if (fecha.getDay() === 1) { // Lunes
+        const dia = fecha.toISOString().split('T')[0];
+        lunes.push(dia);
+      }
+      fecha.setDate(fecha.getDate() + 1);
+    }
+
+    return lunes;
+  }
+
+
+  onMesSeleccionado(month: string): void {
+    this.mesesSeleccionados[month] = !this.mesesSeleccionados[month];
+
+    if (this.mesesSeleccionados[month]) {
+      const lunes = this.obtenerLunesDelMes(month, Number(this.yearField?.value || new Date().getFullYear()));
+
+      const nuevaTarea: Task = {
+        name: `${month} ${this.yearField?.value || ''}`,
+        completed: false,
+        subtasks: lunes.map(dia => ({
+          name: dia,
+          completed: false
+        }))
+      };
+
+      this.tasks.push(nuevaTarea);
+    } else {
+      // Si se deselecciona el mes, se elimina la tarea correspondiente
+      this.tasks = this.tasks.filter(t => !t.name.startsWith(month));
+    }
+  }
+
+  toggleTaskCompletion(task: Task): void {
+    const completed = !task.completed;
+    task.completed = completed;
+    task.subtasks.forEach(subtask => subtask.completed = completed);
+  }
+
+  toggleSubtaskCompletion(task: Task, subtask: Subtask): void {
+    subtask.completed = !subtask.completed;
+    task.completed = task.subtasks.every(t => t.completed);
+  }
+
+  isTaskIndeterminate(task: Task): boolean {
+    return task.subtasks.some(t => t.completed) && !task.subtasks.every(t => t.completed);
+  }
+
+
 }
