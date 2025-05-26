@@ -140,7 +140,8 @@
 
       <div class="col-md-4" [formGroup]="form">
         <label class="form-label">
-          <span style="color: red; font-weight: bold">*</span> Número de placa (ej: AAA-111)
+          <span style="color: red; font-weight: bold">*</span> Número de placa
+          (ej: AAA-111)
         </label>
         <input
           type="text"
@@ -159,20 +160,20 @@
             Este campo es requerido
           </strong>
           <strong *ngIf="plateField?.hasError('pattern')">
-            La placa debe tener el formato AAA-111 (3 letras mayúsculas, guion, 3 números)
+            La placa debe tener el formato AAA-111 (3 letras mayúsculas, guion,
+            3 números)
           </strong>
         </div>
       </div>
-
     </div>
 
     <!-- Año y months -->
+    <div *ngIf="plateField?.valid">
     <div class="mb-3">
       <label class="form-label fw-bold">Año</label>
       <div class="form-check form-check-inline ms-3">
         <input
           class="form-check-input"
-          [disabled]="!habilitarCheckBoxes"
           type="checkbox"
           id="anio2025"
           formControlName="year"
@@ -180,20 +181,23 @@
         />
         <label class="form-check-label" for="anio2025">2025</label>
       </div>
+      </div>
 
       <!-- months -->
+      <div *ngIf="plateField?.valid">
       <div class="form-check form-check-inline" *ngFor="let month of months">
         <input
+          *ngIf="plateField?.valid"
           class="form-check-input"
           type="checkbox"
           [id]="month"
-          [disabled]="!habilitarCheckBoxes"
           [(ngModel)]="mesesSeleccionados[month]"
           [name]="'checkbox_' + month"
           formControlName="month"
           name="month"
         />
         <label class="form-check-label" [for]="month">{{ month }}</label>
+      </div>
       </div>
 
       <section class="example-section">

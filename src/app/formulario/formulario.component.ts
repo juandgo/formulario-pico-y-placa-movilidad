@@ -69,9 +69,9 @@ export class FormularioComponent implements OnInit {
   ];
   yearSeleccionado = 2025;
   mesesSeleccionados: { [key: string]: boolean } = {};
-  get habilitarCheckBoxes(): boolean {
-    return this.plate.trim().length > 0;
-  }
+  // get habilitarCheckBoxes(): boolean {
+  //   return this.plate.trim().length > 0;
+  // }
 
   // Fechas disponibles por mes (puedes modificar las fechas según tus reglas de negocio)
   fechasPorMes: { [key: string]: string[] } = {
