@@ -89,14 +89,6 @@ export class FormularioComponent implements OnInit {
   // Fechas visibles actualmente (según el mes seleccionado)
   fechasVisibles: string[] = [];
 
-  // onMesSeleccionado(month: string): void {
-  //   if (this.mesesSeleccionados[month]) {
-  //     this.fechasVisibles = this.fechasPorMes[month];
-  //   } else {
-  //     this.fechasVisibles = [];
-  //   }
-  // }
-
   fechasSeleccionadas: { [key: string]: boolean } = {};
 
 
@@ -106,15 +98,7 @@ export class FormularioComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // this.months.forEach(month => this.mesesSeleccionados[month] = false);
-    // this.form.get('plate')?.valueChanges.subscribe(value => {
-    //   this.plate = value;
-    //   if (this.habilitarCheckBoxes) {
-    //     this.months.forEach(month => this.mesesSeleccionados[month] = true);
-    //   } else {
-    //     this.months.forEach(month => this.mesesSeleccionados[month] = false);
-    //   }
-    // });
+
   }
 
   getNameValue() {
