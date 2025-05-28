@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { FormularioService } from '../services/formulario.service';
 import {
   FormBuilder,
   FormGroup,
@@ -58,6 +59,8 @@ export class FormularioComponent implements OnInit {
       subtasks: [
         { name: 'Subtarea 1', completed: false },
         { name: 'Subtarea 2', completed: false },
+        { name: 'Subtarea 2', completed: false },
+        { name: 'Subtarea 2', completed: false },
       ],
     },
     {
@@ -65,13 +68,38 @@ export class FormularioComponent implements OnInit {
       completed: false,
       subtasks: [
         { name: 'Subtarea 1', completed: false },
+        { name: 'Subtarea 1', completed: false },
+        { name: 'Subtarea 1', completed: false },
+        { name: 'Subtarea 2', completed: false },
+      ],
+    },
+    {
+      name: 'Marzo',
+      completed: false,
+      subtasks: [
+        { name: 'Subtarea 1', completed: false },
+        { name: 'Subtarea 1', completed: false },
+        { name: 'Subtarea 1', completed: false },
+        { name: 'Subtarea 2', completed: false },
+      ],
+    },
+    {
+      name: 'Abril',
+      completed: false,
+      subtasks: [
+        { name: 'Subtarea 1', completed: false },
+        { name: 'Subtarea 2', completed: false },
+        { name: 'Subtarea 2', completed: false },
         { name: 'Subtarea 2', completed: false },
       ],
     },
     // puedes agregar más meses
   ];
 
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private fb: FormBuilder,
+    private formularioService: FormularioService
+  ) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -137,14 +165,39 @@ export class FormularioComponent implements OnInit {
     console.log('Formulario válido:', this.form.value);
   }
 
-  onMesSeleccionado(index: number) {
-    const monthGroup = this.monthsArray.at(index) as FormGroup;
+  onMesSeleccionado(index: number): void {
+    const monthGroup = this.monthsArray.at(index);
     const completed = monthGroup.get('completed')?.value;
     console.log(`Mes ${this.months[index].name} seleccionado: ${completed}`);
+
+    const subtasks = monthGroup.get('subtasks') as FormArray;
+
+    subtasks.controls.forEach(control => {
+      control.setValue(completed);
+    });
   }
+
 
   updateSubtask(monthIndex: number, subtaskIndex: number, value: boolean) {
     const subtasksArray = (this.monthsArray.at(monthIndex).get('subtasks') as FormArray);
     subtasksArray.at(subtaskIndex).setValue(value);
   }
+
+  // onSubmit(): void {
+  //   if (this.form.invalid) {
+  //     this.form.markAllAsTouched();
+  //     return;
+  //   }
+
+  //   const formData = this.form.value;
+
+  //   this.formularioService.enviarFormulario(formData).subscribe({
+  //     next: response => {
+  //       console.log('Respuesta del servidor:', response);
+  //     },
+  //     error: err => {
+  //       console.error('Error al enviar formulario:', err);
+  //     }
+  //   });
+  // }
 }
