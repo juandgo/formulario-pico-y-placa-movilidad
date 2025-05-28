@@ -1,49 +1,38 @@
 <div class="container mt-4">
   <h4 class="text-center mb-4">
-    RECIBO OFICIAL DE LIQUIDACION Y PAGO DE TASA POR CONGESTION O CONTAMINACION
+    RECIBO OFICIAL DE LIQUIDACIÓN Y PAGO DE TASA POR CONGESTIÓN O CONTAMINACIÓN
   </h4>
 
   <form [formGroup]="form">
     <!-- Datos del propietario -->
-
     <div class="row mb-3">
-      <div class="col-md-12">
+      <div class="col-12">
         <label class="form-label">
           <span class="text-danger fw-bold">*</span> Nombre o Razón Social
         </label>
-
         <input
           type="text"
           formControlName="name"
           class="form-control"
-          required
           [class.is-invalid]="nameField?.touched && nameField?.invalid"
         />
-
         <div
           class="messages"
-          [class.active]="nameField?.touched && nameField?.invalid"
+          *ngIf="nameField?.touched && nameField?.invalid"
         >
-          <strong *ngIf="nameField?.hasError('required')"
-            >Este campo es requerido</strong
-          >
-          <strong *ngIf="nameField?.hasError('maxlength')"
-            >Debe tener máximo 10 caracteres</strong
-          >
-          <strong *ngIf="nameField?.hasError('pattern')"
-            >No debe tener caracteres inválidos</strong
-          >
+          <strong *ngIf="nameField?.hasError('required')">Este campo es requerido</strong>
+          <strong *ngIf="nameField?.hasError('maxlength')">Debe tener máximo 10 caracteres</strong>
+          <strong *ngIf="nameField?.hasError('pattern')">No debe tener caracteres inválidos</strong>
         </div>
       </div>
     </div>
 
     <div class="row mb-3">
       <div class="col-md-3">
-        <label class="form-label"
-          ><span style="color: red; font-weight: bold">*</span> Tipo
-          Documento</label
-        >
-        <select class="form-select" formControlName="tipo_doc" required>
+        <label class="form-label">
+          <span class="text-danger fw-bold">*</span> Tipo Documento
+        </label>
+        <select class="form-select" formControlName="type_doc">
           <option value="">Seleccione</option>
           <option>C.C.</option>
           <option>NIT</option>
@@ -51,22 +40,17 @@
       </div>
 
       <div class="col-md-3">
-        <label class="form-label"
-          ><span style="color: red; font-weight: bold">*</span> Número de
-          Documento</label
-        >
-        <input
-          type="text"
-          formControlName="doc_number"
-          class="form-control"
-          required
-        />
+        <label class="form-label">
+          <span class="text-danger fw-bold">*</span> Número de Documento
+        </label>
+        <input type="text" formControlName="doc_number" class="form-control" />
       </div>
 
       <div class="col-md-3">
         <label class="form-label">D.V.</label>
         <input type="text" formControlName="dv" class="form-control" />
       </div>
+
       <div class="col-md-3">
         <label class="form-label">Teléfono</label>
         <input type="tel" formControlName="phone" class="form-control" />
@@ -76,42 +60,29 @@
     <!-- Notificación -->
     <div class="row mb-3">
       <div class="col-md-6">
-        <label class="form-label"
-          ><span style="color: red; font-weight: bold">*</span> Dirección para
-          notificación</label
-        >
-        <input
-          type="text"
-          formControlName="address"
-          class="form-control"
-          required
-        />
+        <label class="form-label">
+          <span class="text-danger fw-bold">*</span> Dirección para notificación
+        </label>
+        <input type="text" formControlName="address" class="form-control" />
       </div>
+
       <div class="col-md-6">
         <label class="form-label">
           <span class="text-danger fw-bold">*</span> Correo electrónico
           <small class="text-muted">({{ emailField?.value }})</small>
         </label>
-
         <input
           type="email"
           formControlName="email"
           class="form-control"
           [class.is-invalid]="emailField?.touched && emailField?.invalid"
         />
-
         <div
           class="messages"
-          [class.active]="
-            emailField?.invalid && (emailField?.touched || emailField?.dirty)
-          "
+          *ngIf="emailField?.invalid && (emailField?.touched || emailField?.dirty)"
         >
-          <strong *ngIf="emailField?.hasError('required')"
-            >El correo es obligatorio</strong
-          >
-          <strong *ngIf="emailField?.hasError('email')"
-            >Formato de correo inválido</strong
-          >
+          <strong *ngIf="emailField?.hasError('required')">El correo es obligatorio</strong>
+          <strong *ngIf="emailField?.hasError('email')">Formato de correo inválido</strong>
         </div>
       </div>
     </div>
@@ -138,100 +109,68 @@
         </select>
       </div>
 
-      <div class="col-md-4" [formGroup]="form">
+      <div class="col-md-4">
         <label class="form-label">
-          <span style="color: red; font-weight: bold">*</span> Número de placa
-          (ej: AAA-111)
+          <span class="text-danger fw-bold">*</span> Número de placa (ej: AAA-111)
         </label>
         <input
           type="text"
           class="form-control"
-          required
           formControlName="plate"
           maxlength="7"
           placeholder="AAA-111"
           (input)="onInput($event)"
+          [class.is-invalid]="plateField?.touched && plateField?.invalid"
         />
         <div
           class="messages"
-          [class.active]="plateField?.touched && plateField?.invalid"
+          *ngIf="plateField?.touched && plateField?.invalid"
         >
-          <strong *ngIf="plateField?.hasError('required')">
-            Este campo es requerido
-          </strong>
+          <strong *ngIf="plateField?.hasError('required')">Este campo es requerido</strong>
           <strong *ngIf="plateField?.hasError('pattern')">
-            La placa debe tener el formato AAA-111 (3 letras mayúsculas, guion,
-            3 números)
+            La placa debe tener el formato AAA-111 (3 letras mayúsculas, guion, 3 números)
           </strong>
         </div>
       </div>
     </div>
 
-    <div *ngIf="plateField?.valid">
-      <!-- Select de año -->
-      <mat-form-field appearance="fill">
-        <mat-label>Año</mat-label>
-        <mat-select formControlName="year">
-          <mat-option *ngFor="let y of [2024, 2025, 2026]" [value]="y">{{
-            y
-          }}</mat-option>
-        </mat-select>
-      </mat-form-field>
+    <div class="container" *ngIf="plateField?.valid">
+      <div class="row">
+        <div
+          class="col-12 col-sm-6 col-md-4 mb-4"
+          *ngFor="let monthGroup of monthsArray.controls; let i = index"
+          [formGroup]="getMonthGroup(i)"
 
-      <div class="mb-3">
-        <label class="form-label fw-bold">Año</label>
-        <div class="form-check form-check-inline ms-3">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            id="anio2025"
-            [checked]="anioSeleccionado"
-            (change)="toggleSeleccionAnio($event)"
-          />
-          <label class="form-check-label" for="anio2025">2025</label>
+        >
+          <section class="p-3 border rounded shadow-sm h-100">
+            <mat-checkbox
+              class="w-100 mb-2"
+              formControlName="completed"
+              (change)="onMesSeleccionado(i)"
+            >
+              <h5 class="mb-0">{{ months[i].name }}</h5>
+            </mat-checkbox>
+
+            <ul class="list-unstyled ps-3 mt-2" formArrayName="subtasks">
+              <li
+                *ngFor="let subtaskControl of getSubtasksControls(monthGroup); let j = index"
+                class="mb-1"
+              >
+                <mat-checkbox
+                  [formControl]="subtaskControl"
+                  (change)="updateSubtask(i, j, subtaskControl.value)"
+                >
+                  {{ months[i].subtasks[j].name }}
+                </mat-checkbox>
+              </li>
+            </ul>
+          </section>
         </div>
       </div>
-
-      <!-- Checkboxes por mes -->
-      <div class="meses">
-        <mat-checkbox
-          *ngFor="let mes of months"
-          [checked]="mesesSeleccionados[mes]"
-          (change)="onMesSeleccionado(mes)"
-        >
-          {{ mes }}
-        </mat-checkbox>
-      </div>
-
-      <!-- Subtareas del mes seleccionado -->
-      <section *ngFor="let task of tasks" class="example-section">
-        <span class="example-list-section">
-          <mat-checkbox
-          class="example-margin"
-          [checked]="task.completed"
-          [indeterminate]="isTaskIndeterminate(task)"
-          (change)="toggleTaskCompletion(task)">
-          {{ task.name }}
-          >
-            {{ task.name }}
-          </mat-checkbox>
-        </span>
-
-        <span class="example-list-section">
-          <ul>
-            <li *ngFor="let subtask of task.subtasks">
-              <mat-checkbox
-                [checked]="subtask.completed"
-                (change)="toggleSubtaskCompletion(task, subtask)"
-              >
-                {{ subtask.name }}
-              </mat-checkbox>
-            </li>
-          </ul>
-        </span>
-      </section>
     </div>
 
+
+    <!-- Clase y observaciones -->
     <div class="row mb-3">
       <div class="col-md-4">
         <label class="form-label">Clase de Vehículo</label>
@@ -243,32 +182,17 @@
       </div>
       <div class="col-md-8">
         <label class="form-label">Observaciones</label>
-        <textarea class="form-control" rows="2"></textarea>
+        <textarea class="form-control" rows="2" formControlName="observations"></textarea>
       </div>
     </div>
 
     <!-- Total a pagar -->
     <div class="mb-3">
-      <label class="form-label"
-        ><span style="color: red; font-weight: bold">*</span> Total a
-        Pagar</label
-      >
-      <input type="number" class="form-control" required />
+      <label class="form-label">
+        <span class="text-danger fw-bold">*</span> Total a Pagar
+      </label>
+      <input type="number" class="form-control" formControlName="total" />
     </div>
-
-    <!-- <mat-form-field appearance="fill">
-      <mat-label>
-        <span style="color: red; font-weight: bold">*</span> NOMBRE O RAZÓN SOCIAL
-      </mat-label>
-      <input matInput id="nombreRazonSocial" required />
-    </mat-form-field> -->
-
-    <!-- <mat-form-field appearance="outline" class="custom-field" floatLabel="always">
-      <mat-label>
-        <span class="required-label">NOMBRE O RAZÓN SOCIAL</span>
-      </mat-label>
-      <input matInput required>
-    </mat-form-field> -->
 
     <!-- Botones -->
     <div class="text-end">
