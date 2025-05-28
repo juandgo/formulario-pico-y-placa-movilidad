@@ -17,7 +17,9 @@ import {
 interface Subtask {
   name: string;
   completed: boolean;
+  // disabled?: boolean; // ← Nuevo
 }
+
 
 interface Month {
   name: string;
@@ -104,7 +106,7 @@ export class FormularioComponent implements OnInit {
         const date = new Date(dateStr);
         return {
           name: dateStr,
-          completed: date < today
+          completed: false
         };
       });
     });
