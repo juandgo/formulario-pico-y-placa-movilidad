@@ -50,6 +50,8 @@ function plateFormatValidator(
 })
 export class FormularioComponent implements OnInit {
   form!: FormGroup;
+  hd!: Holidays;
+  months: Month[] = [];
 
   readonly picoYPlacaDias: { [key: string]: number } = {
     '5': 1,
@@ -78,14 +80,12 @@ export class FormularioComponent implements OnInit {
   //   'Noviembre',
   //   'Diciembre',
   // ].map((name) => ({ name, completed: false, fechas: [] }));
-  months: Month[] = [];
 
   constructor(
     private fb: FormBuilder,
     private formularioService: FormularioService
   ) {}
 
-  hd!: Holidays;
   ngOnInit(): void {
     // const currentMonth = new Date().getMonth(); // 0 = Enero
     const today = new Date();
@@ -106,7 +106,6 @@ export class FormularioComponent implements OnInit {
       'Diciembre',
     ];
 
-
     this.months = monthNames
       .map((name, index) => ({
         name,
@@ -116,7 +115,6 @@ export class FormularioComponent implements OnInit {
         disabled: false, // ya no necesitamos marcarlos como deshabilitados si los filtramos
       }))
       .filter((_, index) => index >= currentMonth); // ← Oculta los meses anteriores
-
 
     this.hd = new Holidays('CO'); // CO = Colombia
     this.form = this.fb.group({
@@ -157,6 +155,25 @@ export class FormularioComponent implements OnInit {
     });
 
     // this.obtenerDatos();
+  }
+
+  // Inicialización de Meses y Fechas
+  createMonthGroup(month: Month): FormGroup {
+    return this.fb.group({
+      completed: new FormControl({
+        value: month.completed,
+        disabled: month.disabled || false,
+      }),
+      fechas: this.fb.array(
+        month.fechas.map(
+          (subtask) =>
+            new FormControl({
+              value: subtask.completed,
+              disabled: !!subtask.disabled,
+            })
+        )
+      ),
+    });
   }
 
   updateMonthSubtasks(fechas: string[][]): void {
@@ -200,7 +217,6 @@ export class FormularioComponent implements OnInit {
     });
   }
 
-
   getPicoYPlacaDates(dia: number): string[][] {
     const year = new Date().getFullYear();
     const fechasPorMes: string[][] = [];
@@ -222,24 +238,6 @@ export class FormularioComponent implements OnInit {
     }
 
     return fechasPorMes;
-  }
-
-  createMonthGroup(month: Month): FormGroup {
-    return this.fb.group({
-      completed: new FormControl({
-        value: month.completed,
-        disabled: month.disabled || false,
-      }),
-      fechas: this.fb.array(
-        month.fechas.map(
-          (subtask) =>
-            new FormControl({
-              value: subtask.completed,
-              disabled: !!subtask.disabled,
-            })
-        )
-      ),
-    });
   }
 
   get monthsArray(): FormArray {
@@ -266,19 +264,28 @@ export class FormularioComponent implements OnInit {
     return this.monthsArray.at(index) as FormGroup;
   }
 
+  // Eventos del Usuario
   onInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-    input.value = input.value.toUpperCase().slice(0, 7);
-    this.form.get('plate')?.setValue(input.value, { emitEvent: false });
-  }
+    let raw = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
 
-  onSubmit(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+    // Permitir borrar libremente
+    if (raw.length <= 3) {
+      this.form.get('plate')?.setValue(raw, { emitEvent: false });
+      input.value = raw;
       return;
     }
-    console.log('Formulario válido:', this.form.value);
+
+    // Aplicar formato solo si hay al menos 3 letras y algo de números
+    const match = raw.match(/^([A-Z]{3})(\d{0,3})$/);
+    if (match) {
+      raw = `${match[1]}-${match[2]}`;
+    }
+
+    this.form.get('plate')?.setValue(raw, { emitEvent: false });
+    input.value = raw;
   }
+
 
   onMesSeleccionado(index: number): void {
     const monthGroup = this.monthsArray.at(index);
@@ -291,13 +298,22 @@ export class FormularioComponent implements OnInit {
     });
   }
 
-  updateSubtask(monthIndex: number, subtaskIndex: number, value: boolean) {
-    const fechasArray = this.monthsArray
-      .at(monthIndex)
-      .get('fechas') as FormArray;
-    fechasArray.at(subtaskIndex).setValue(value);
-  }
 
+  // updateSubtask(monthIndex: number, subtaskIndex: number, value: boolean) {
+  //   const fechasArray = this.monthsArray
+  //   .at(monthIndex)
+  //   .get('fechas') as FormArray;
+  //   fechasArray.at(subtaskIndex).setValue(value);
+  // }
+
+  // Envío del Formulario
+  onSubmit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    console.log('Formulario válido:', this.form.value);
+  }
   // obtenerDatos(): void {
   //   const payload = {};
   //   this.formularioService.obtenerFormularioCompleto(payload).subscribe({
