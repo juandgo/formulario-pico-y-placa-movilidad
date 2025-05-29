@@ -98,7 +98,7 @@
 
     <!-- Vehículo -->
     <div class="row mb-3">
-      <div class="col-md-4">
+      <!-- <div class="col-md-4">
         <label class="form-label">Marca</label>
         <select class="form-select" formControlName="brand">
           <option value="">Seleccione</option>
@@ -106,7 +106,18 @@
           <option>Renault</option>
           <option>Toyota</option>
         </select>
+      </div> -->
+
+      <div class="col-md-4">
+        <label class="form-label">Marca</label>
+        <select class="form-select" formControlName="brand">
+          <option value="">Seleccione</option>
+          <option *ngFor="let brand of brands" [value]="brand.id">
+            {{ brand.etiqueta }}
+          </option>
+        </select>
       </div>
+
 
       <div class="col-md-4">
         <label class="form-label">Modelo</label>
@@ -178,7 +189,6 @@
               >
                 <mat-checkbox
                   [formControl]="subtaskControl"
-                  (change)="updateSubtask(i, j, subtaskControl.value)"
                   [ngClass]="{ 'disabled-subtask': subtaskControl.disabled }"
                 >
                   {{ months[i].fechas[j].name }}
@@ -217,6 +227,16 @@
       </label>
       <input type="number" class="form-control" formControlName="total" />
     </div>
+
+    <!-- <mat-form-field appearance="fill">
+      <mat-label>Marca</mat-label>
+      <mat-select formControlName="brand" placeholder="Seleccione una marca">
+        <mat-option value="">-- Seleccione una marca --</mat-option>
+        <mat-option *ngFor="let brand of brands" [value]="brand.id">
+          {{ brand.nombre }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field> -->
 
     <!-- Botones -->
     <div class="text-end">

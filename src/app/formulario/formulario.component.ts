@@ -1,7 +1,13 @@
+import { HttpClientModule } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FormularioService } from '../services/formulario.service';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatOptionModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormField } from '@angular/material/form-field';
+
 import Holidays from 'date-holidays';
 import {
   FormBuilder,
@@ -46,9 +52,22 @@ function plateFormatValidator(
   templateUrl: './formulario.component.html',
   styleUrls: ['./formulario.component.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, MatCheckboxModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    MatCheckboxModule,
+    MatFormFieldModule,
+    MatOptionModule,
+    MatSelectModule,
+    // FormularioComponent, // Asegúrate de que este componente esté importado correctamente
+  ],
 })
 export class FormularioComponent implements OnInit {
+  // opciones: any[] = [];
+  brands: any[] = [];
+  models: any[] = []; // Por si después los usas
+
   form!: FormGroup;
   hd!: Holidays;
   months: Month[] = [];
@@ -66,28 +85,12 @@ export class FormularioComponent implements OnInit {
     '4': 5,
   };
 
-  // months: Month[] = [
-  //   'Enero',
-  //   'Febrero',
-  //   'Marzo',
-  //   'Abril',
-  //   'Mayo',
-  //   'Junio',
-  //   'Julio',
-  //   'Agosto',
-  //   'Septiembre',
-  //   'Octubre',
-  //   'Noviembre',
-  //   'Diciembre',
-  // ].map((name) => ({ name, completed: false, fechas: [] }));
-
   constructor(
     private fb: FormBuilder,
     private formularioService: FormularioService
   ) {}
 
   ngOnInit(): void {
-    // const currentMonth = new Date().getMonth(); // 0 = Enero
     const today = new Date();
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
@@ -112,11 +115,12 @@ export class FormularioComponent implements OnInit {
         index,
         completed: false,
         fechas: [],
-        disabled: false, // ya no necesitamos marcarlos como deshabilitados si los filtramos
+        disabled: false,
       }))
-      .filter((_, index) => index >= currentMonth); // ← Oculta los meses anteriores
+      .filter((_, index) => index >= currentMonth);
 
-    this.hd = new Holidays('CO'); // CO = Colombia
+    this.hd = new Holidays('CO'); // Colombia
+
     this.form = this.fb.group({
       name: [
         '',
@@ -154,8 +158,39 @@ export class FormularioComponent implements OnInit {
       }
     });
 
-    // this.obtenerDatos();
+    this.cargarDatosDesdeApi(); // 👈 llamada a la nueva función
   }
+
+  cargarDatosDesdeApi(): void {
+    const payload = {
+      ayuda: JSON.stringify({ xs: 1, sm: 1, md: 2, lg: 2, xl: 2 }),
+      descripcion: 'TIPO DOCUMENTO',
+      etiqueta: 'TIPO DOCUMENTO',
+      idFormulario: 103,
+      idPregunta: 36,  // <-- este es el idPregunta para marcas
+      imprimir: 'SI',
+      longitud: JSON.stringify({ xs: 1, sm: 1, md: 2, lg: 2, xl: 2 }),
+      nombre: 'TIPO_DOCU',
+      pdfX: 80,
+      pdfY: 195,
+      requerido: 'SI',
+      tipo: 'LISTA',
+    };
+
+    this.formularioService.obtenerOpcionesPregunta(payload).subscribe({
+      next: (response) => {
+        console.log('Respuesta completa de la API:', response);
+        if (response?.result === 'OK' && Array.isArray(response.data)) {
+          this.brands = response.data;
+          console.log('Marcas cargadas:', this.brands);
+        } else {
+          console.warn('Respuesta sin marcas válidas:', response);
+        }
+      }
+
+    });
+  }
+
 
   // Inicialización de Meses y Fechas
   createMonthGroup(month: Month): FormGroup {
@@ -286,7 +321,6 @@ export class FormularioComponent implements OnInit {
     input.value = raw;
   }
 
-
   onMesSeleccionado(index: number): void {
     const monthGroup = this.monthsArray.at(index);
     const completed = monthGroup.get('completed')?.value;
@@ -297,7 +331,6 @@ export class FormularioComponent implements OnInit {
       }
     });
   }
-
 
   // updateSubtask(monthIndex: number, subtaskIndex: number, value: boolean) {
   //   const fechasArray = this.monthsArray
