@@ -168,7 +168,7 @@
               <h5 class="mb-0">{{ months[i].name }}</h5>
             </mat-checkbox>
 
-            <ul class="list-unstyled ps-3 mt-2" formArrayName="subtasks">
+            <ul class="list-unstyled ps-3 mt-2" formArrayName="fechas">
               <li
                 *ngFor="
                   let subtaskControl of getSubtasksControls(monthGroup);
@@ -181,7 +181,7 @@
                   (change)="updateSubtask(i, j, subtaskControl.value)"
                   [ngClass]="{ 'disabled-subtask': subtaskControl.disabled }"
                 >
-                  {{ months[i].subtasks[j].name }}
+                  {{ months[i].fechas[j].name }}
                 </mat-checkbox>
               </li>
             </ul>

@@ -23,8 +23,9 @@ interface Subtask {
 
 interface Month {
   name: string;
+  index: number; // ← Nuevo para identificar el mes
   completed: boolean;
-  subtasks: Subtask[];
+  fechas: Subtask[];
   disabled?: boolean;
 }
 
@@ -51,16 +52,6 @@ export class FormularioComponent implements OnInit {
   form!: FormGroup;
 
   readonly picoYPlacaDias: { [key: string]: number } = {
-    // '1': 5,
-    // '2': 5,
-    // '3': 1,
-    // '4': 1,
-    // '5': 2,
-    // '6': 2,
-    // '7': 3,
-    // '8': 3,
-    // '9': 4,
-    // '0': 4
     '5': 1,
     '6': 1,
     '7': 2,
@@ -73,20 +64,21 @@ export class FormularioComponent implements OnInit {
     '4': 5,
   };
 
-  months: Month[] = [
-    'Enero',
-    'Febrero',
-    'Marzo',
-    'Abril',
-    'Mayo',
-    'Junio',
-    'Julio',
-    'Agosto',
-    'Septiembre',
-    'Octubre',
-    'Noviembre',
-    'Diciembre',
-  ].map((name) => ({ name, completed: false, subtasks: [] }));
+  // months: Month[] = [
+  //   'Enero',
+  //   'Febrero',
+  //   'Marzo',
+  //   'Abril',
+  //   'Mayo',
+  //   'Junio',
+  //   'Julio',
+  //   'Agosto',
+  //   'Septiembre',
+  //   'Octubre',
+  //   'Noviembre',
+  //   'Diciembre',
+  // ].map((name) => ({ name, completed: false, fechas: [] }));
+  months: Month[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -95,6 +87,37 @@ export class FormularioComponent implements OnInit {
 
   hd!: Holidays;
   ngOnInit(): void {
+    // const currentMonth = new Date().getMonth(); // 0 = Enero
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const monthNames = [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
+    ];
+
+
+    this.months = monthNames
+      .map((name, index) => ({
+        name,
+        index,
+        completed: false,
+        fechas: [],
+        disabled: false, // ya no necesitamos marcarlos como deshabilitados si los filtramos
+      }))
+      .filter((_, index) => index >= currentMonth); // ← Oculta los meses anteriores
+
+
     this.hd = new Holidays('CO'); // CO = Colombia
     this.form = this.fb.group({
       name: [
@@ -140,29 +163,43 @@ export class FormularioComponent implements OnInit {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Actualiza subtasks en this.months (conservando los 12)
     this.months.forEach((month, i) => {
-      const subtasks = fechas[i].map(dateStr => {
-        const date = new Date(dateStr);
-        date.setHours(0, 0, 0, 0);
-        const isPast = date < today;
-        return {
-          name: dateStr,
-          completed: false,
-          disabled: isPast
-        };
+      const monthIndex = month.index;
+      const fechasMes =
+        fechas[monthIndex]?.map((dateStr) => {
+          const date = new Date(dateStr);
+          date.setHours(0, 0, 0, 0);
+          return {
+            name: dateStr,
+            completed: false,
+            disabled: date < today,
+          };
+        }) || [];
+
+      // Actualiza objeto de estado
+      month.fechas = fechasMes;
+      month.disabled = fechasMes.every((st) => st.disabled);
+
+      // Actualiza formulario reactivo
+      const monthGroup = this.getMonthGroup(i);
+      const fechasArray = monthGroup.get('fechas') as FormArray;
+
+      // Limpia y vuelve a cargar el FormArray
+      fechasArray.clear();
+      fechasMes.forEach((f) => {
+        fechasArray.push(
+          new FormControl({ value: false, disabled: f.disabled })
+        );
       });
 
-      month.subtasks = subtasks;
-      month.disabled = subtasks.every(st => st.disabled);
+      const completedCtrl = monthGroup.get('completed');
+      completedCtrl?.disable({ onlySelf: true });
+      if (!month.disabled) {
+        completedCtrl?.enable({ onlySelf: true });
+      }
     });
-
-    // Reemplaza el FormArray manteniendo la estructura original
-    const formArray = this.fb.array(
-      this.months.map(month => this.createMonthGroup(month))
-    );
-    this.form.setControl('months', formArray);
   }
+
 
   getPicoYPlacaDates(dia: number): string[][] {
     const year = new Date().getFullYear();
@@ -193,8 +230,8 @@ export class FormularioComponent implements OnInit {
         value: month.completed,
         disabled: month.disabled || false,
       }),
-      subtasks: this.fb.array(
-        month.subtasks.map(
+      fechas: this.fb.array(
+        month.fechas.map(
           (subtask) =>
             new FormControl({
               value: subtask.completed,
@@ -204,7 +241,6 @@ export class FormularioComponent implements OnInit {
       ),
     });
   }
-
 
   get monthsArray(): FormArray {
     return this.form.get('months') as FormArray;
@@ -223,7 +259,7 @@ export class FormularioComponent implements OnInit {
   }
 
   getSubtasksControls(monthGroup: AbstractControl): FormControl[] {
-    return (monthGroup.get('subtasks') as FormArray).controls as FormControl[];
+    return (monthGroup.get('fechas') as FormArray).controls as FormControl[];
   }
 
   getMonthGroup(index: number): FormGroup {
@@ -247,19 +283,19 @@ export class FormularioComponent implements OnInit {
   onMesSeleccionado(index: number): void {
     const monthGroup = this.monthsArray.at(index);
     const completed = monthGroup.get('completed')?.value;
-    const subtasks = monthGroup.get('subtasks') as FormArray;
-    subtasks.controls.forEach((control, subIndex) => {
-      if (!this.months[index].subtasks[subIndex].disabled) {
+    const fechas = monthGroup.get('fechas') as FormArray;
+    fechas.controls.forEach((control, subIndex) => {
+      if (!this.months[index].fechas[subIndex].disabled) {
         control.setValue(completed);
       }
     });
   }
 
   updateSubtask(monthIndex: number, subtaskIndex: number, value: boolean) {
-    const subtasksArray = this.monthsArray
+    const fechasArray = this.monthsArray
       .at(monthIndex)
-      .get('subtasks') as FormArray;
-    subtasksArray.at(subtaskIndex).setValue(value);
+      .get('fechas') as FormArray;
+    fechasArray.at(subtaskIndex).setValue(value);
   }
 
   // obtenerDatos(): void {
