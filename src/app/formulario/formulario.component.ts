@@ -107,12 +107,9 @@ export class FormularioComponent implements OnInit {
 
   updateMonthSubtasks(fechas: string[][]): void {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    this.months.forEach((month, i) => {
-      const subtasks = fechas[i].map(dateStr => {
+    this.months = this.months.map((month, i) => {
+      const validFechas = fechas[i].map(dateStr => {
         const date = new Date(dateStr);
-        date.setHours(0, 0, 0, 0);
         const isPast = date < today;
         return {
           name: dateStr,
@@ -121,17 +118,53 @@ export class FormularioComponent implements OnInit {
         };
       });
 
-      month.subtasks = subtasks;
-
-      // Deshabilitar el mes si todas las fechas están deshabilitadas
-      const allDisabled = subtasks.every(st => st.disabled);
-      (month as any).disabled = allDisabled; // ← Agregamos campo para usar luego
+      return {
+        ...month,
+        subtasks: validFechas
+      };
     });
 
-    const monthFGs = this.months.map(month => this.createMonthGroup(month));
-    const formArray = this.fb.array(monthFGs);
+    // Filtrar meses que aún tienen al menos una subtask futura
+    const mesesValidos = this.months.filter(month =>
+      month.subtasks.some(sub => !sub.disabled)
+    );
+
+    const formArray = this.fb.array(
+      mesesValidos.map(month => this.createMonthGroup(month))
+    );
+
     this.form.setControl('months', formArray);
+    this.months = mesesValidos; // ← para que el *ngFor muestre solo los válidos
   }
+
+
+  // updateMonthSubtasks(fechas: string[][]): void {
+  //   const today = new Date();
+  //   today.setHours(0, 0, 0, 0);
+
+  //   this.months.forEach((month, i) => {
+  //     const subtasks = fechas[i].map(dateStr => {
+  //       const date = new Date(dateStr);
+  //       date.setHours(0, 0, 0, 0);
+  //       const isPast = date < today;
+  //       return {
+  //         name: dateStr,
+  //         completed: false,
+  //         disabled: isPast
+  //       };
+  //     });
+
+  //     month.subtasks = subtasks;
+
+  //     // Deshabilitar el mes si todas las fechas están deshabilitadas
+  //     const allDisabled = subtasks.every(st => st.disabled);
+  //     (month as any).disabled = allDisabled; // ← Agregamos campo para usar luego
+  //   });
+
+  //   const monthFGs = this.months.map(month => this.createMonthGroup(month));
+  //   const formArray = this.fb.array(monthFGs);
+  //   this.form.setControl('months', formArray);
+  // }
 
 
 
