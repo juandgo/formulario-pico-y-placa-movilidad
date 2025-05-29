@@ -17,7 +17,7 @@ import {
 interface Subtask {
   name: string;
   completed: boolean;
-  // disabled?: boolean; // ← Nuevo
+  disabled?: boolean; // ← Nuevo
 }
 
 
@@ -25,6 +25,7 @@ interface Month {
   name: string;
   completed: boolean;
   subtasks: Subtask[];
+  disabled?: boolean;
 }
 
 function validNamePattern(control: AbstractControl): ValidationErrors | null {
@@ -48,11 +49,16 @@ export class FormularioComponent implements OnInit {
   form!: FormGroup;
 
   readonly picoYPlacaDias: { [key: string]: number } = {
-    '1': 5, '2': 5,
-    '3': 1, '4': 1,
-    '5': 2, '6': 2,
-    '7': 3, '8': 3,
-    '9': 4, '0': 4
+    '1': 5,
+    '2': 5,
+    '3': 1,
+    '4': 1,
+    '5': 2,
+    '6': 2,
+    '7': 3,
+    '8': 3,
+    '9': 4,
+    '0': 4
   };
 
   months: Month[] = [
@@ -101,20 +107,33 @@ export class FormularioComponent implements OnInit {
 
   updateMonthSubtasks(fechas: string[][]): void {
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     this.months.forEach((month, i) => {
-      month.subtasks = fechas[i].map(dateStr => {
+      const subtasks = fechas[i].map(dateStr => {
         const date = new Date(dateStr);
+        date.setHours(0, 0, 0, 0);
+        const isPast = date < today;
         return {
           name: dateStr,
-          completed: false
+          completed: false,
+          disabled: isPast
         };
       });
+
+      month.subtasks = subtasks;
+
+      // Deshabilitar el mes si todas las fechas están deshabilitadas
+      const allDisabled = subtasks.every(st => st.disabled);
+      (month as any).disabled = allDisabled; // ← Agregamos campo para usar luego
     });
 
     const monthFGs = this.months.map(month => this.createMonthGroup(month));
     const formArray = this.fb.array(monthFGs);
     this.form.setControl('months', formArray);
   }
+
+
 
   getPicoYPlacaDates(dia: number): string[][] {
     const year = new Date().getFullYear();
@@ -126,7 +145,8 @@ export class FormularioComponent implements OnInit {
 
       while (date.getMonth() === mes) {
         if (date.getDay() === dia) {
-          fechas.push(date.toLocaleDateString('es-CO'));
+          // fechas.push(date.toLocaleDateString('es-CO'));
+          fechas.push(date.toISOString().split('T')[0]); // '2025-05-28'
         }
         date.setDate(date.getDate() + 1);
       }
@@ -138,12 +158,20 @@ export class FormularioComponent implements OnInit {
 
   createMonthGroup(month: Month): FormGroup {
     return this.fb.group({
-      completed: [month.completed],
+      completed: new FormControl(
+        { value: month.completed, disabled: (month as any).disabled || false }
+      ),
       subtasks: this.fb.array(
-        month.subtasks.map(subtask => this.fb.control(subtask.completed))
+        month.subtasks.map(subtask =>
+          new FormControl(
+            { value: subtask.completed, disabled: !!subtask.disabled }
+          )
+        )
       )
     });
   }
+
+
 
   get monthsArray(): FormArray {
     return this.form.get('months') as FormArray;
