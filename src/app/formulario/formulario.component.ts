@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FormularioService } from '../services/formulario.service';
+import Holidays from 'date-holidays';
 import {
   FormBuilder,
   FormGroup,
@@ -20,7 +21,6 @@ interface Subtask {
   disabled?: boolean; // ← Nuevo
 }
 
-
 interface Month {
   name: string;
   completed: boolean;
@@ -33,7 +33,9 @@ function validNamePattern(control: AbstractControl): ValidationErrors | null {
   return valid ? null : { pattern: true };
 }
 
-function plateFormatValidator(control: AbstractControl): ValidationErrors | null {
+function plateFormatValidator(
+  control: AbstractControl
+): ValidationErrors | null {
   const valid = /^[A-Z]{3}-\d{3}$/.test(control.value);
   return valid ? null : { pattern: true };
 }
@@ -68,23 +70,37 @@ export class FormularioComponent implements OnInit {
     '1': 4,
     '2': 4,
     '3': 5,
-    '4': 5
+    '4': 5,
   };
 
   months: Month[] = [
-    'Enero', 'Febrero', 'Marzo', 'Abril',
-    'Mayo', 'Junio', 'Julio', 'Agosto',
-    'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-  ].map(name => ({ name, completed: false, subtasks: [] }));
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Septiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre',
+  ].map((name) => ({ name, completed: false, subtasks: [] }));
 
   constructor(
     private fb: FormBuilder,
     private formularioService: FormularioService
   ) {}
 
+  hd!: Holidays;
   ngOnInit(): void {
+    this.hd = new Holidays('CO'); // CO = Colombia
     this.form = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(10), validNamePattern]],
+      name: [
+        '',
+        [Validators.required, Validators.maxLength(10), validNamePattern],
+      ],
       type_doc: ['', Validators.required],
       doc_number: ['', Validators.required],
       dv: [''],
@@ -93,14 +109,19 @@ export class FormularioComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       brand: [''],
       model: [''],
-      plate: ['', [Validators.required, Validators.maxLength(7), plateFormatValidator]],
+      plate: [
+        '',
+        [Validators.required, Validators.maxLength(7), plateFormatValidator],
+      ],
       type_vehicle: [''],
       observations: [''],
       total: ['', Validators.required],
-      months: this.fb.array(this.months.map(month => this.createMonthGroup(month)))
+      months: this.fb.array(
+        this.months.map((month) => this.createMonthGroup(month))
+      ),
     });
 
-    this.form.get('plate')?.valueChanges.subscribe(value => {
+    this.form.get('plate')?.valueChanges.subscribe((value) => {
       if (this.plateField?.valid) {
         const lastDigit = value.trim().slice(-1);
         const dia = this.picoYPlacaDias[lastDigit];
@@ -117,9 +138,13 @@ export class FormularioComponent implements OnInit {
 
   updateMonthSubtasks(fechas: string[][]): void {
     const today = new Date();
-    this.months = this.months.map((month, i) => {
-      const validFechas = fechas[i].map(dateStr => {
+    today.setHours(0, 0, 0, 0);
+
+    // Actualiza subtasks en this.months (conservando los 12)
+    this.months.forEach((month, i) => {
+      const subtasks = fechas[i].map(dateStr => {
         const date = new Date(dateStr);
+        date.setHours(0, 0, 0, 0);
         const isPast = date < today;
         return {
           name: dateStr,
@@ -128,55 +153,16 @@ export class FormularioComponent implements OnInit {
         };
       });
 
-      return {
-        ...month,
-        subtasks: validFechas
-      };
+      month.subtasks = subtasks;
+      month.disabled = subtasks.every(st => st.disabled);
     });
 
-    // Filtrar meses que aún tienen al menos una subtask futura
-    const mesesValidos = this.months.filter(month =>
-      month.subtasks.some(sub => !sub.disabled)
-    );
-
+    // Reemplaza el FormArray manteniendo la estructura original
     const formArray = this.fb.array(
-      mesesValidos.map(month => this.createMonthGroup(month))
+      this.months.map(month => this.createMonthGroup(month))
     );
-
     this.form.setControl('months', formArray);
-    this.months = mesesValidos; // ← para que el *ngFor muestre solo los válidos
   }
-
-
-  // updateMonthSubtasks(fechas: string[][]): void {
-  //   const today = new Date();
-  //   today.setHours(0, 0, 0, 0);
-
-  //   this.months.forEach((month, i) => {
-  //     const subtasks = fechas[i].map(dateStr => {
-  //       const date = new Date(dateStr);
-  //       date.setHours(0, 0, 0, 0);
-  //       const isPast = date < today;
-  //       return {
-  //         name: dateStr,
-  //         completed: false,
-  //         disabled: isPast
-  //       };
-  //     });
-
-  //     month.subtasks = subtasks;
-
-  //     // Deshabilitar el mes si todas las fechas están deshabilitadas
-  //     const allDisabled = subtasks.every(st => st.disabled);
-  //     (month as any).disabled = allDisabled; // ← Agregamos campo para usar luego
-  //   });
-
-  //   const monthFGs = this.months.map(month => this.createMonthGroup(month));
-  //   const formArray = this.fb.array(monthFGs);
-  //   this.form.setControl('months', formArray);
-  // }
-
-
 
   getPicoYPlacaDates(dia: number): string[][] {
     const year = new Date().getFullYear();
@@ -184,36 +170,62 @@ export class FormularioComponent implements OnInit {
 
     for (let mes = 0; mes < 12; mes++) {
       const fechas: string[] = [];
-      const date = new Date(year, mes, 1);
+      const daysInMonth = new Date(year, mes + 1, 0).getDate();
 
-      while (date.getMonth() === mes) {
-        if (date.getDay() === dia) {
-          // fechas.push(date.toLocaleDateString('es-CO'));
-          fechas.push(date.toISOString().split('T')[0]); // '2025-05-28'
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, mes, day);
+        date.setHours(0, 0, 0, 0);
+
+        if (date.getDay() === dia && !this.hd.isHoliday(date)) {
+          fechas.push(date.toLocaleDateString('sv-SE'));
         }
-        date.setDate(date.getDate() + 1);
       }
+
       fechasPorMes.push(fechas);
     }
 
     return fechasPorMes;
   }
 
+
+  // getPicoYPlacaDates(dia: number): string[][] {
+  //   const year = new Date().getFullYear();
+  //   const fechasPorMes: string[][] = [];
+
+  //   for (let mes = 0; mes < 12; mes++) {
+  //     const fechas: string[] = [];
+  //     const date = new Date(year, mes, 1);
+
+  //     while (date.getMonth() === mes) {
+  //       if (date.getDay() === dia) {
+  //         // fechas.push(date.toLocaleDateString('es-CO'));
+  //         fechas.push(date.toISOString().split('T')[0]); // '2025-05-28'
+  //       }
+  //       date.setDate(date.getDate() + 1);
+  //     }
+  //     fechasPorMes.push(fechas);
+  //   }
+
+  //   return fechasPorMes;
+  // }
+
   createMonthGroup(month: Month): FormGroup {
     return this.fb.group({
-      completed: new FormControl(
-        { value: month.completed, disabled: (month as any).disabled || false }
-      ),
+      completed: new FormControl({
+        value: month.completed,
+        disabled: month.disabled || false,
+      }),
       subtasks: this.fb.array(
-        month.subtasks.map(subtask =>
-          new FormControl(
-            { value: subtask.completed, disabled: !!subtask.disabled }
-          )
+        month.subtasks.map(
+          (subtask) =>
+            new FormControl({
+              value: subtask.completed,
+              disabled: !!subtask.disabled,
+            })
         )
-      )
+      ),
     });
   }
-
 
 
   get monthsArray(): FormArray {
@@ -258,7 +270,7 @@ export class FormularioComponent implements OnInit {
     const monthGroup = this.monthsArray.at(index);
     const completed = monthGroup.get('completed')?.value;
     const subtasks = monthGroup.get('subtasks') as FormArray;
-    subtasks.controls.forEach(control => control.setValue(completed));
+    subtasks.controls.forEach((control) => control.setValue(completed));
   }
 
   updateSubtask(monthIndex: number, subtaskIndex: number, value: boolean) {
