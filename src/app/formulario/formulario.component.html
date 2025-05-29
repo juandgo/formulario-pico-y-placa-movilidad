@@ -16,13 +16,16 @@
           class="form-control"
           [class.is-invalid]="nameField?.touched && nameField?.invalid"
         />
-        <div
-          class="messages"
-          *ngIf="nameField?.touched && nameField?.invalid"
-        >
-          <strong *ngIf="nameField?.hasError('required')">Este campo es requerido</strong>
-          <strong *ngIf="nameField?.hasError('maxlength')">Debe tener máximo 10 caracteres</strong>
-          <strong *ngIf="nameField?.hasError('pattern')">No debe tener caracteres inválidos</strong>
+        <div class="messages" *ngIf="nameField?.touched && nameField?.invalid">
+          <strong *ngIf="nameField?.hasError('required')"
+            >Este campo es requerido</strong
+          >
+          <strong *ngIf="nameField?.hasError('maxlength')"
+            >Debe tener máximo 10 caracteres</strong
+          >
+          <strong *ngIf="nameField?.hasError('pattern')"
+            >No debe tener caracteres inválidos</strong
+          >
         </div>
       </div>
     </div>
@@ -79,17 +82,23 @@
         />
         <div
           class="messages"
-          *ngIf="emailField?.invalid && (emailField?.touched || emailField?.dirty)"
+          *ngIf="
+            emailField?.invalid && (emailField?.touched || emailField?.dirty)
+          "
         >
-          <strong *ngIf="emailField?.hasError('required')">El correo es obligatorio</strong>
-          <strong *ngIf="emailField?.hasError('email')">Formato de correo inválido</strong>
+          <strong *ngIf="emailField?.hasError('required')"
+            >El correo es obligatorio</strong
+          >
+          <strong *ngIf="emailField?.hasError('email')"
+            >Formato de correo inválido</strong
+          >
         </div>
       </div>
     </div>
 
     <!-- Vehículo -->
     <div class="row mb-3">
-      <div class="col-md-4">
+      <!-- <div class="col-md-4">
         <label class="form-label">Marca</label>
         <select class="form-select" formControlName="brand">
           <option value="">Seleccione</option>
@@ -97,7 +106,18 @@
           <option>Renault</option>
           <option>Toyota</option>
         </select>
+      </div> -->
+
+      <div class="col-md-4">
+        <label class="form-label">Marca</label>
+        <select class="form-select" formControlName="brand">
+          <option value="">Seleccione</option>
+          <option *ngFor="let brand of brands" [value]="brand.id">
+            {{ brand.etiqueta }}
+          </option>
+        </select>
       </div>
+
 
       <div class="col-md-4">
         <label class="form-label">Modelo</label>
@@ -111,7 +131,8 @@
 
       <div class="col-md-4">
         <label class="form-label">
-          <span class="text-danger fw-bold">*</span> Número de placa (ej: AAA-111)
+          <span class="text-danger fw-bold">*</span> Número de placa (ej:
+          AAA-111)
         </label>
         <input
           type="text"
@@ -126,9 +147,12 @@
           class="messages"
           *ngIf="plateField?.touched && plateField?.invalid"
         >
-          <strong *ngIf="plateField?.hasError('required')">Este campo es requerido</strong>
+          <strong *ngIf="plateField?.hasError('required')"
+            >Este campo es requerido</strong
+          >
           <strong *ngIf="plateField?.hasError('pattern')">
-            La placa debe tener el formato AAA-111 (3 letras mayúsculas, guion, 3 números)
+            La placa debe tener el formato AAA-111 (3 letras mayúsculas, guion,
+            3 números)
           </strong>
         </div>
       </div>
@@ -140,9 +164,13 @@
           class="col-12 col-sm-6 col-md-4 mb-4"
           *ngFor="let monthGroup of monthsArray.controls; let i = index"
           [formGroup]="getMonthGroup(i)"
-
         >
-          <section class="p-3 border rounded shadow-sm h-100">
+          <section
+            class="p-3 border rounded shadow-sm h-100"
+            [class.bg-light]="getMonthGroup(i).get('completed')?.disabled"
+            [class.text-muted]="getMonthGroup(i).get('completed')?.disabled"
+            [class.opacity-75]="getMonthGroup(i).get('completed')?.disabled"
+          >
             <mat-checkbox
               class="w-100 mb-2"
               formControlName="completed"
@@ -151,16 +179,19 @@
               <h5 class="mb-0">{{ months[i].name }}</h5>
             </mat-checkbox>
 
-            <ul class="list-unstyled ps-3 mt-2" formArrayName="subtasks">
+            <ul class="list-unstyled ps-3 mt-2" formArrayName="fechas">
               <li
-                *ngFor="let subtaskControl of getSubtasksControls(monthGroup); let j = index"
+                *ngFor="
+                  let subtaskControl of getSubtasksControls(monthGroup);
+                  let j = index
+                "
                 class="mb-1"
               >
                 <mat-checkbox
                   [formControl]="subtaskControl"
-                  (change)="updateSubtask(i, j, subtaskControl.value)"
+                  [ngClass]="{ 'disabled-subtask': subtaskControl.disabled }"
                 >
-                  {{ months[i].subtasks[j].name }}
+                  {{ months[i].fechas[j].name }}
                 </mat-checkbox>
               </li>
             </ul>
@@ -168,7 +199,6 @@
         </div>
       </div>
     </div>
-
 
     <!-- Clase y observaciones -->
     <div class="row mb-3">
@@ -182,7 +212,11 @@
       </div>
       <div class="col-md-8">
         <label class="form-label">Observaciones</label>
-        <textarea class="form-control" rows="2" formControlName="observations"></textarea>
+        <textarea
+          class="form-control"
+          rows="2"
+          formControlName="observations"
+        ></textarea>
       </div>
     </div>
 
@@ -193,6 +227,16 @@
       </label>
       <input type="number" class="form-control" formControlName="total" />
     </div>
+
+    <!-- <mat-form-field appearance="fill">
+      <mat-label>Marca</mat-label>
+      <mat-select formControlName="brand" placeholder="Seleccione una marca">
+        <mat-option value="">-- Seleccione una marca --</mat-option>
+        <mat-option *ngFor="let brand of brands" [value]="brand.id">
+          {{ brand.nombre }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field> -->
 
     <!-- Botones -->
     <div class="text-end">
