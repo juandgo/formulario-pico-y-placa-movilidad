@@ -56,3 +56,21 @@ input.ng-invalid.ng-touched {
     margin-top: 2px;
   }
 }
+
+::ng-deep .disabled-subtask {
+  opacity: 0.6;
+  pointer-events: none; // evita interacción
+}
+
+::ng-deep .disabled-subtask .mat-checkbox-inner-container,
+::ng-deep .disabled-subtask .mat-checkbox-frame {
+  background-color: #e0e0e0 !important; // color gris para el fondo
+  border-color: #bdbdbd !important;     // borde más tenue
+}
+
+::ng-deep .disabled-subtask .mat-checkbox-label {
+  color: #9e9e9e !important; // texto gris claro
+}
+
+
+

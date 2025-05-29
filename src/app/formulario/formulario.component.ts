@@ -187,28 +187,6 @@ export class FormularioComponent implements OnInit {
     return fechasPorMes;
   }
 
-
-  // getPicoYPlacaDates(dia: number): string[][] {
-  //   const year = new Date().getFullYear();
-  //   const fechasPorMes: string[][] = [];
-
-  //   for (let mes = 0; mes < 12; mes++) {
-  //     const fechas: string[] = [];
-  //     const date = new Date(year, mes, 1);
-
-  //     while (date.getMonth() === mes) {
-  //       if (date.getDay() === dia) {
-  //         // fechas.push(date.toLocaleDateString('es-CO'));
-  //         fechas.push(date.toISOString().split('T')[0]); // '2025-05-28'
-  //       }
-  //       date.setDate(date.getDate() + 1);
-  //     }
-  //     fechasPorMes.push(fechas);
-  //   }
-
-  //   return fechasPorMes;
-  // }
-
   createMonthGroup(month: Month): FormGroup {
     return this.fb.group({
       completed: new FormControl({
@@ -270,7 +248,11 @@ export class FormularioComponent implements OnInit {
     const monthGroup = this.monthsArray.at(index);
     const completed = monthGroup.get('completed')?.value;
     const subtasks = monthGroup.get('subtasks') as FormArray;
-    subtasks.controls.forEach((control) => control.setValue(completed));
+    subtasks.controls.forEach((control, subIndex) => {
+      if (!this.months[index].subtasks[subIndex].disabled) {
+        control.setValue(completed);
+      }
+    });
   }
 
   updateSubtask(monthIndex: number, subtaskIndex: number, value: boolean) {
